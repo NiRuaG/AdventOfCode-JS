@@ -4,90 +4,143 @@ console.log("\nThe Manhattan distance from the central port to the closest inter
 
 const [wire1, wire2] = input.map(pathText => pathText.split(','));
 
-const dimensions = path => 
-  path.reduce((accum, leg) => {
-    const {at, max} = accum;
+const horizRuns = {};
+const vertRuns = {};
+let [currX, currY] = [0,0];
+let currSteps = 0;
 
-    const dir = leg[0];
-    const length = Number(leg.slice(1));
-    switch (dir) {
-      case 'U':
-        at.vert += length;
-        if (at.vert > max.up) {
-          max.up = at.vert;
-        }
-        break;
-      case 'D':
-        at.vert -= length;
-        if (at.vert < max.down) {
-          max.down = at.vert;
-        }
-        break;
-      case 'L':
-        at.horiz -= length;
-        if (at.horiz < max.left) {
-          max.left = at.horiz;
-        }
-        break;
-      case 'R':
-        at.horiz += length;
-        if (at.horiz > max.right) {
-          max.right = at.horiz;
-        }
-        break;
-      default:
-        throw `Bad direction ${dir}`
+for(const leg of wire1) {
+  const dir = leg[0];
+  const length = Number(leg.slice(1));
+
+  const distance = length * (dir === 'R' || dir === 'U' ? 1 : -1);
+  
+  if (dir === 'R' || dir === 'L') {
+    // const run = distance < 0 
+      // ? [currX+distance, currX, currSteps]
+      // : [currX, currX+distance, currSteps]
+    const run = [currX, currX+distance, currSteps];
+
+    if (horizRuns[currY] === undefined) {
+      horizRuns[currY] = [[...run]]
+    } else {
+      horizRuns[currY].push([...run])
     }
 
-    return {at, max};
-  }, {
-    at: {
-      vert: 0,
-      horiz: 0,
-    },
+    currX += distance;
+  }
+  else if (dir === 'U' || dir === 'D') {
+    // const run  = distance < 0
+      // ? [currY+distance, currY, currSteps]
+      // : [currY, currY+distance, currSteps]
 
-    max: {
-      up: 0, down: 0,
-      left: 0, right: 0
+    const run = [currY, currY+distance, currSteps]
+
+    if (vertRuns[currY] === undefined) {
+      vertRuns[currX] = [[...run]]
+    } else {
+      vertRuns[currX].push([...run])
     }
-  }).max
 
+    currY += distance;
+  }
+  else {
+    throw `unknown direction in wire1 ${dir}`
+  }
 
-// const maxRight = .max()
-console.log([wire1, wire2].map(dimensions))
+  currSteps += Math.abs(distance);
+}
 
-// console.log(`
-//   ${run(program)[0]}
-// `)
+//* Wire 2
+[currX, currY] = [0,0];
+currSteps = 0;
+let bestManhDist = Infinity;
+let fewestSteps = Infinity;
 
-// //* Your puzzle answer was 5290681.
+const horizKeys = Object.keys(horizRuns);
+const vertKeys = Object.keys(vertRuns);
 
-// const targetOutput = 19690720;
+for(const leg of wire2) {
+  const dir = leg[0];
+  const length = Number(leg.slice(1));
 
-// console.log(`\nThe input noun and verb that cause the program to produce the output ${targetOutput} are:`);
+  const distance = length * (dir === 'R' || dir === 'U' ? 1 : -1);
 
-// const { noun, verb } = (_ => {
-//   let noun, verb;
+  if (dir === 'R' || dir === 'L') {
+    const [left, right]  = distance < 0 ? [currX+distance, currX] : [currX, currX+distance]
 
-//   for (noun = 0; noun <= 99; ++noun) {
-//     for (verb = 0; verb <= 99; ++verb) {
-//       const program = [...input];
+    for(const vKey of vertKeys) {
+      const vert = Number(vKey);
+      if (vert < left || vert > right) continue;
 
-//       program[1] = noun;
-//       program[2] = verb;
+      const runs = vertRuns[vKey];
+      for(const [begin, end, stepStart] of runs) {
+        const [bottom, top] = begin < end ? [begin, end] : [end, begin];
+        
+        if (currY >= bottom && currY <= top) {
+          const manhDist = Math.abs(vert) + Math.abs(currY);
 
-//       if (run(program)[0] === targetOutput)
-//         return { noun, verb };
-//     }
-//   }
-// })();
+          if (manhDist < bestManhDist) {
+            bestManhDist = manhDist;
+          }
 
-// console.log(`
-//   ${noun} and ${verb} respectively
-// `);
+          const steps1 = stepStart + Math.abs(currY - begin);
+          const steps2 = currSteps + Math.abs(vert - currX);
+          const steps = steps1 + steps2;
+          if (steps < fewestSteps) {
+            fewestSteps = steps;
+          }
+        }
+      }
+    }
 
-// console.log(`The value of 100 * noun + verb is:
-//   ${100 * noun + verb}
-// `);
+    currX += distance;
+  }
+  else if (dir === 'U' || dir === 'D') {
+    const [bottom, top]  = distance < 0 ? [currY+distance, currY] : [currY, currY+distance]
 
-// //* Your puzzle answer was 5741.
+    for(const hKey of horizKeys) {
+      const horiz = Number(hKey);
+      if (horiz < bottom || horiz > top) continue;
+
+      const runs = horizRuns[hKey];
+      for(const [begin, end, stepStart] of runs) {
+        const [left, right] = begin < end ? [begin, end] : [end, begin];
+
+        if (currX >= left && currX <= right) {
+          const manhDist = Math.abs(horiz) + Math.abs(currX);
+
+          if (manhDist < bestManhDist) {
+            bestManhDist = manhDist;
+          }
+
+          const steps1 = stepStart + Math.abs(currX - begin);
+          const steps2 = currSteps + Math.abs(horiz - currY);
+          const steps = steps1 + steps2;
+          if (steps < fewestSteps) {
+            fewestSteps = steps;
+          }
+        }
+      }
+    }
+
+    currY += distance;
+  }
+  else {
+    throw `unknown direction in wire2 ${dir}`
+  }
+
+  currSteps += Math.abs(distance);
+}
+
+console.log(`
+  ${bestManhDist}
+`)
+
+//* Your puzzle answer was 1195.
+
+console.log(`\nThe fewest combined steps to reach an intersection is:\n
+  ${fewestSteps}
+`)
+
+//* Your puzzle answer was 91518.
