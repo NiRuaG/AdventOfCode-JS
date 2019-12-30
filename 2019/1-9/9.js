@@ -1,7 +1,7 @@
 const inputRaw = require('./inputs/9');
 const input = inputRaw.map(BigInt);
 
-console.log("\nBOOST keyccode is:");
+console.log("\nBOOST keycode is:");
 
 const run = (program, input) => {
   const outputs = [];

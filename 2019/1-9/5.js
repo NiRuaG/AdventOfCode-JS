@@ -26,10 +26,10 @@ const run = (program, input) => {
           result = value1 * value2;
           break;
         case 7:
-          result = (value1 < value2) | 0;
+          result = (value1 < value2) & 1;
           break;
         case 8:
-          result = (value1 === value2) | 0;
+          result = (value1 === value2) & 1;
           break;
         default: 
           result = null;

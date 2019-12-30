@@ -2,7 +2,6 @@ const input = require('./inputs/2');
 
 console.log("\nAfter the program halts, the value left at position 0 is:");
 
-
 const run = program => {
   let instrPtr = 0;
   let opcode = program[instrPtr];

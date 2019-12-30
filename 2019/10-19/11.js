@@ -121,7 +121,7 @@ console.log(`
 
 // * Your puzzle answer was 2293.
 
-console.log("\nRegistration identifier:");
+console.log("\nRegistration identifier:\n");
 
 let min = { x:  Infinity, y:  Infinity };
 let max = { x: -Infinity, y: -Infinity };

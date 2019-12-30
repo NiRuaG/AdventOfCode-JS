@@ -12,12 +12,13 @@ const gcd = (x,y) => {
 const keyOf = (x,y) => `${x},${y}`;
 const coordsFrom = key => key.split(',').map(Number);
 
-const rows = input.split('\n');char
+const rows = input.split('\n');
 
 const asteroidToAngles = new Map();
 
 rows.forEach((row, myY) => {
-  [...row].for??????ghnm,= '#') return;
+  [...row].forEach((char, myX) => {
+    if (char !== '#') return;
 
     const myKey = keyOf(myX, myY);
 

@@ -126,7 +126,7 @@ console.log(`
 
 console.log("\nThe highest (feedback) signal that can be sent to the thrusters is:");
 
-function* runGen(program, id) {
+function* runGen(program) {
   let instrPtr = 0;
   let opcode = program[instrPtr];
 
