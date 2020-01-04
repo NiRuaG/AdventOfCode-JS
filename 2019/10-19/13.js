@@ -6,6 +6,7 @@ console.log("\nNumber of block tiles:");
 function* runGen(program) {
   let instrPtr = 0;
   let relativeBase = 0;
+  let input;
 
   let opcode = Number(program[instrPtr]);
 
@@ -45,13 +46,12 @@ function* runGen(program) {
     else if (op === 3) {
       if (mode1 === 1) throw "Invalid immediate mode for write parameter"
 
-      const input = yield;
       program[Number(param1) + (mode1 === 2 ? relativeBase : 0)] = input;
       
       instrPtr += 2;
     }
     else if (op === 4) {
-      yield value1;
+      input = yield value1;
 
       instrPtr += 2;
     }
@@ -113,59 +113,37 @@ console.log(`
 
 // * Your puzzle answer was 268.
 
-const game2 = runGen([""...input])
-// console.log("\nRegistration identifier:\n");
+console.log("Score from beating game:");
 
-// let min = { x:  Infinity, y:  Infinity };
-// let max = { x: -Infinity, y: -Infinity };
+const game2Input = [...input];
+game2Input[0] = 2; // 2 quarters
+const game2 = runGen(game2Input);
 
-// const painter2 = runGen([...input]);
-// painter2.next(); // run to first input
+let ballX = 0;
+let paddleX = 0;
+let score = 0;
 
-// panelColors.clear();
-// [x,y] = [0, 0];
-// key = keyOf(x,y);
-// dir = 0; // up
-// currentColor;
+let done = false;
 
-// newColor = painter2.next(1); // first input
-// nextDir = painter2.next();
+while(!done) {
+  const stickPosition = Math.sign(ballX - paddleX);
 
-// while (!newColor.done && !nextDir.done) { 
-//   panelColors.set(key, Number(newColor.value));
-//   dir = (dir + (Number(nextDir.value) || 3)) % 4;
-//   if (dir & 1) {
-//     x += (2-dir);
-//     max.x = Math.max(x, max.x);
-//     min.x = Math.min(x, min.x);
-//   } else {
-//     y += (1-dir);
-//     max.y = Math.max(y, max.y);
-//     min.y = Math.min(y, min.y);
-//   }
-//   key = keyOf(x,y);
-//   const currentColor = panelColors.get(key) || 0; // undefined -> 0 black, 0 -> 0 
-//   painter2.next();
-//   // outputs 
-//   newColor = painter2.next(currentColor);
-//   nextDir = painter2.next()
-// }
+  let x,id;
+  [{value: x}, , {value: id, done}] = Array.from({length: 3}, _ => game2.next(stickPosition));
+  [x,id] = [x,id].map(Number)
+  
+  if (x === -1) {
+    score = id;
+  } else if (id === 3) {
+    paddleX = x;
+  } else if (id === 4) {
+    ballX = x;
+  }
+}
 
-// for(let row=max.y; row>=min.y; --row){
-//   let rowStr = '';
-//   for(let col=min.x; col<=max.x; ++col){
-//     const char = panelColors.get(keyOf(col,row)) === 1 ? '#' : '.';
+console.log(`
+  ${score}
+`);
 
-//     rowStr = rowStr.concat(char);
-//   }
-//   console.log('  ', rowStr);
-// }
 
-// // ..##..#..#.#.....##..###..###...##..#......
-// // .#..#.#..#.#....#..#.#..#.#..#.#..#.#......
-// // .#..#.####.#....#....#..#.#..#.#..#.#......
-// // .####.#..#.#....#....###..###..####.#......
-// // .#..#.#..#.#....#..#.#....#.#..#..#.#......
-// // .#..#.#..#.####..##..#....#..#.#..#.####...
-
-// //* Your puzzle answer was AHLCPRAL.
+//* Your puzzle answer was 13989.
